@@ -1,10 +1,7 @@
 {
-    "folders": [
-        {
-            "path": "D:\\VSC\\.venv"
-        },
-        {
-            "path": "."
-        }
-    ]
+	"folders": [
+		{
+			"path": "."
+		}
+	]
 }
