@@ -152,6 +152,7 @@
 {% endblock %}
 
 {% block javascript %}
+
 <script type="text/javascript">
     var overview_plant_list = {{ overview_plant_list| safe }}
 
@@ -164,5 +165,7 @@
 
     var label_saveAsImage = '{% trans 'Save As Image' %}'
 </script>
+
 <script type="text/javascript" src="{% static 'wms/js/dashboard.js' %}"></script>
+
 {% endblock %}
