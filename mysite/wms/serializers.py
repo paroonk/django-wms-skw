@@ -53,8 +53,7 @@ class AgvTransferSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgvTransfer
-        fields = ['id', 'run', 'status', 'step', 'x_nav', 'y_nav', 'beta_nav',
-                  'pattern', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5']
+        fields = ['id', 'run', 'status', 'step', 'x_nav', 'y_nav', 'beta_nav', 'pattern', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5']
 
 
 class AgvProductionPlanSerializer(serializers.ModelSerializer):
@@ -67,8 +66,7 @@ class AgvProductionPlanSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgvProductionPlan
-        fields = ['id', 'product_name', 'lot_name',
-                  'qty_total', 'qty_remain', 'percent_complete']
+        fields = ['id', 'product_name', 'lot_name', 'qty_total', 'qty_remain', 'percent_complete']
 
 
 class RobotQueueSerializer(serializers.ModelSerializer):
@@ -94,43 +92,37 @@ class AgvQueueSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgvQueue
-        fields = ['id', 'product_name', 'lot_name', 'qty_act',
-                  'robot_no', 'pick_id', 'place_id', 'mode']
+        fields = ['id', 'product_name', 'lot_name', 'qty_act', 'robot_no', 'pick_id', 'place_id', 'mode']
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['product_name', 'name_eng', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory',
-                  'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
+        fields = ['product_name', 'name_eng', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
 
 
 class StorageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Storage
-        fields = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory',
-                  'inv_product', 'name_eng', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
+        fields = ['storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'name_eng', 'inv_qty', 'lot_name', 'created_on', 'updated_on']
 
 
 class ProductHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Product.history.model
-        fields = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total',
-                  'qty_storage_avail', 'qty_inventory_avail']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
 
 
 class StorageHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Storage.history.model
-        fields = ['history_date', 'history_type', 'history_change_reason', 'storage_id',
-                  'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty']
 
 
 class AgvProductionPlanHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = AgvProductionPlan.history.model
-        fields = ['history_date', 'history_type', 'history_change_reason',
-                  'id', 'product_name', 'qty_total', 'qty_remain', 'lot_name']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'qty_total', 'qty_remain', 'lot_name']
 
 
 class RobotQueueHistorySerializer(serializers.ModelSerializer):
@@ -139,8 +131,7 @@ class RobotQueueHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RobotQueue.history.model
-        fields = ['history_date', 'history_type',
-                  'history_change_reason', 'robot_no', 'product_id', 'qty_act']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'robot_no', 'product_id', 'qty_act']
 
 
 class AgvQueueHistorySerializer(serializers.ModelSerializer):
@@ -149,8 +140,7 @@ class AgvQueueHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgvQueue.history.model
-        fields = ['history_date', 'history_type', 'history_change_reason', 'product_name',
-                  'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
 
 
 class AgvTransferHistorySerializer(serializers.ModelSerializer):
@@ -162,5 +152,4 @@ class AgvTransferHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AgvTransfer.history.model
-        fields = ['history_date', 'history_type', 'history_change_reason',
-                  'run', 'status', 'step', 'pause', 'pattern']
+        fields = ['history_date', 'history_type', 'history_change_reason', 'run', 'status', 'step', 'pause', 'pattern']
