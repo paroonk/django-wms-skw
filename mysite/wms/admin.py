@@ -3,6 +3,7 @@ from import_export import resources
 from import_export.admin import ImportExportMixin
 from import_export.formats import base_formats
 from simple_history.admin import SimpleHistoryAdmin
+
 from .models import *
 
 admin.site.site_url = '/'
@@ -58,19 +59,7 @@ class ProductResource(resources.ModelResource):
 
 class ProductAdmin(ImportExportMixin, SimpleHistoryAdmin):
     resource_class = ProductResource
-    list_display = [
-        'product_name',
-        'name_eng',
-        'plant',
-        'qty_limit',
-        'bg_color',
-        'font_color',
-        'qty_storage',
-        'qty_inventory',
-        'qty_buffer',
-        'qty_total',
-        'qty_storage_avail',
-    ]
+    list_display = ['product_name', 'name_eng', 'plant', 'qty_limit', 'bg_color', 'font_color', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_total', 'qty_storage_avail']
     list_filter = ['plant', 'qty_limit']
     search_fields = ['product_name', 'name_eng']
 
@@ -145,34 +134,9 @@ class StorageResource(resources.ModelResource):
 
 class StorageAdmin(ImportExportMixin, SimpleHistoryAdmin):
     resource_class = StorageResource
-    list_display = [
-        'storage_id',
-        'coor_id',
-        'coor_x',
-        'coor_y',
-        'is_inventory',
-        'storage_for',
-        'have_inventory',
-        'inv_product',
-        'name_eng',
-        'inv_qty',
-        'lot_name',
-        'created_on',
-        'updated_on',
-        'bg_color',
-        'font_color',
-    ]
+    list_display = ['storage_id', 'coor_id', 'coor_x', 'coor_y', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty', 'lot_name', 'created_on', 'updated_on', 'bg_color', 'font_color']
     list_per_page = 50
-    list_filter = [
-        'created_on',
-        'updated_on',
-        'have_inventory',
-        'inv_product',
-        'is_inventory',
-        'zone',
-        'col',
-        'row',
-    ]
+    list_filter = ['created_on', 'updated_on', 'have_inventory', 'inv_product', 'is_inventory', 'zone', 'col', 'row']
     search_fields = ['storage_id', 'storage_for', 'lot_name']
 
     def get_import_formats(self):
@@ -183,14 +147,7 @@ class StorageAdmin(ImportExportMixin, SimpleHistoryAdmin):
 
 
 class AgvProductionPlanAdmin(SimpleHistoryAdmin):
-    list_display = [
-        'id',
-        'product_name',
-        'qty_total',
-        'qty_remain',
-        'lot_name',
-        'percent_complete',
-    ]
+    list_display = ['id', 'product_name', 'qty_total', 'qty_remain', 'lot_name', 'percent_complete']
     list_editable = ['product_name', 'qty_total', 'qty_remain', 'lot_name']
     list_display_links = None
     list_per_page = 50
@@ -212,49 +169,14 @@ class RobotQueueAdmin(SimpleHistoryAdmin):
 
 
 class AgvQueueAdmin(SimpleHistoryAdmin):
-    list_display = [
-        'id',
-        'product_name',
-        'lot_name',
-        'qty_act',
-        'created_on',
-        'robot_no',
-        'pick_id',
-        'pick_col',
-        'pick_row',
-        'place_id',
-        'place_col',
-        'place_row',
-        'mode',
-    ]
+    list_display = ['id', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'pick_col', 'pick_row', 'place_id', 'place_col', 'place_row', 'mode']
     list_per_page = 50
     list_filter = ['mode', 'lot_name', 'product_name']
     search_fields = ['product_name']
 
 
 class AgvTransferAdmin(SimpleHistoryAdmin):
-    list_display = [
-        'id',
-        'run',
-        'status',
-        'step',
-        'x_nav',
-        'y_nav',
-        'beta_nav',
-        'pause',
-        'pattern',
-        'qty',
-        'x1',
-        'y1',
-        'x2',
-        'y2',
-        'x3',
-        'y3',
-        'x4',
-        'y4',
-        'x5',
-        'y5',
-    ]
+    list_display = ['id', 'run', 'status', 'step', 'x_nav', 'y_nav', 'beta_nav', 'pause', 'pattern', 'qty', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5']
     list_editable = ['run', 'status', 'step', 'pause', 'pattern']
     list_per_page = 50
 
@@ -282,20 +204,7 @@ class ProductHistoryResource(resources.ModelResource):
 
 class ProductHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = ProductHistoryResource
-    list_display = [
-        'history_id',
-        'history_date',
-        'history_type',
-        'history_change_reason',
-        'product_name',
-        'qty_storage',
-        'qty_inventory',
-        'qty_buffer',
-        'qty_misplace',
-        'qty_total',
-        'qty_storage_avail',
-        'qty_inventory_avail',
-    ]
+    list_display = ['history_id', 'history_date', 'history_type', 'history_change_reason', 'product_name', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
     list_filter = ['history_date']
     search_fields = ['product_name']
     list_per_page = 50
@@ -317,18 +226,7 @@ class StorageHistoryResource(resources.ModelResource):
 
 class StorageHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = StorageHistoryResource
-    list_display = [
-        'history_id',
-        'history_date',
-        'history_type',
-        'history_change_reason',
-        'storage_id',
-        'is_inventory',
-        'storage_for',
-        'have_inventory',
-        'inv_product',
-        'inv_qty',
-    ]
+    list_display = ['history_id', 'history_date', 'history_type', 'history_change_reason', 'storage_id', 'is_inventory', 'storage_for', 'have_inventory', 'inv_product', 'inv_qty']
     list_per_page = 50
     list_filter = ['history_date', 'have_inventory', 'inv_product', 'is_inventory']
     search_fields = ['storage_id']
@@ -350,17 +248,7 @@ class AgvProductionPlanHistoryResource(resources.ModelResource):
 
 class AgvProductionPlanHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = AgvProductionPlanHistoryResource
-    list_display = [
-        'history_id',
-        'history_date',
-        'history_type',
-        'history_change_reason',
-        'id',
-        'product_name',
-        'qty_total',
-        'qty_remain',
-        'lot_name',
-    ]
+    list_display = ['history_id', 'history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'qty_total', 'qty_remain', 'lot_name']
     list_per_page = 50
     list_filter = ['history_date', 'product_name', 'lot_name']
     search_fields = ['product_name', 'lot_name']
@@ -382,16 +270,7 @@ class RobotQueueHistoryResource(resources.ModelResource):
 
 class RobotQueueHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = RobotQueueHistoryResource
-    list_display = [
-        'history_id',
-        'history_date',
-        'history_type',
-        'history_change_reason',
-        'id',
-        'robot_no',
-        'product_id',
-        'qty_act',
-    ]
+    list_display = ['history_id', 'history_date', 'history_type', 'history_change_reason', 'id', 'robot_no', 'product_id', 'qty_act']
     list_per_page = 50
     list_filter = ['history_date', 'robot_no', 'product_id']
     search_fields = ['product_id']
@@ -413,21 +292,7 @@ class AgvQueueHistoryResource(resources.ModelResource):
 
 class AgvQueueHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = AgvQueueHistoryResource
-    list_display = [
-        'history_id',
-        'history_date',
-        'history_type',
-        'history_change_reason',
-        'id',
-        'product_name',
-        'lot_name',
-        'qty_act',
-        'created_on',
-        'robot_no',
-        'pick_id',
-        'place_id',
-        'mode',
-    ]
+    list_display = ['history_id', 'history_date', 'history_type', 'history_change_reason', 'id', 'product_name', 'lot_name', 'qty_act', 'created_on', 'robot_no', 'pick_id', 'place_id', 'mode']
     list_per_page = 50
     list_filter = ['history_date', 'mode', 'lot_name', 'product_name']
     search_fields = ['product_name']
@@ -449,18 +314,7 @@ class AgvTransferHistoryResource(resources.ModelResource):
 
 class AgvTransferHistoryAdmin(ImportExportMixin, admin.ModelAdmin):
     resource_class = AgvTransferHistoryResource
-    list_display = [
-        'history_id',
-        'history_date',
-        'history_type',
-        'history_change_reason',
-        'id',
-        'run',
-        'status',
-        'step',
-        'pause',
-        'pattern',
-    ]
+    list_display = ['history_id', 'history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']
     list_per_page = 50
     list_filter = ['history_date']
     search_fields = ['id']
