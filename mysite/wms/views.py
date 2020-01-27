@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import F
 from django.http import JsonResponse
-from django.shortcuts import get_list_or_404, redirect, render
+from django.shortcuts import render, redirect, get_list_or_404
 from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 from django.views import generic
@@ -17,7 +17,7 @@ from .forms import *
 from .serializers import *
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 def permission_denied(request):
     messages.add_message(request, messages.INFO, "You don't have authorization to view this page. Please sign in with authorized user account.")
     return redirect(request.META.get('HTTP_REFERER'))
@@ -31,12 +31,12 @@ def redirect_home(request):
     return redirect('wms:dashboard')
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 class AutoCloseView(generic.TemplateView):
     template_name = 'wms/auto_close.html'
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 class DashboardView(generic.TemplateView):
     template_name = 'wms/dashboard.html'
 
@@ -76,7 +76,7 @@ class DashboardView(generic.TemplateView):
         return context
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 def layout_map(obj_storage, debug=False, age=False):
     layout = {}
     layout_col = []
@@ -118,7 +118,7 @@ def layout_map(obj_storage, debug=False, age=False):
             layout[s.layout_col][s.layout_row]['font_color'] = s.font_color
             if age:
                 layout[s.layout_col][s.layout_row]['age'] = (timezone.now() - s.created_on).days
-        elif debug and s.is_inventory:
+        elif debug and s.is_inventory and s.column_id.storage_for:
             layout[s.layout_col][s.layout_row]['bg_color'] = df_product.loc[s.column_id.storage_for, 'bg_color']
             layout[s.layout_col][s.layout_row]['font_color'] = df_product.loc[s.column_id.storage_for, 'font_color']
 
@@ -215,7 +215,7 @@ class LayoutAgeView(generic.TemplateView):
         return context
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @login_required
 def inv_create(request, pk):
     obj = get_object_or_404(Storage, pk=pk)
@@ -281,7 +281,7 @@ def inv_delete(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @login_required
 def invcol_update(request, pk):
     qs_storage = get_object_or_404(Column, pk=pk).storage_set.all()
@@ -345,7 +345,7 @@ def invcol_delete(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @login_required
 def col_update(request, pk):
     obj = get_object_or_404(Column, pk=pk)
@@ -367,7 +367,7 @@ def col_update(request, pk):
     return JsonResponse(data)
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @method_decorator([login_required, groups_required('Staff')], name='dispatch')
 class AgvView(generic.TemplateView):
     template_name = 'wms/agv.html'
@@ -444,7 +444,7 @@ class AgvView(generic.TemplateView):
         return render(request, self.template_name, self.get_context_data(**context))
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @method_decorator([login_required, groups_required('Staff')], name='dispatch')
 class AgvTestView(generic.TemplateView):
     template_name = 'wms/agv_debug.html'
@@ -503,7 +503,7 @@ class AgvTestView(generic.TemplateView):
         return render(request, self.template_name, self.get_context_data(**context))
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @login_required
 def get_data_storage_form(request):
     data = {}
@@ -637,7 +637,7 @@ def get_data_move_form(request):
     return JsonResponse(data)
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @method_decorator(login_required, name='dispatch')
 class HistoryGraphView(generic.TemplateView):
     template_name = 'wms/historygraph.html'
@@ -666,7 +666,7 @@ class HistoryGraphView(generic.TemplateView):
         return context
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @method_decorator(login_required, name='dispatch')
 class ProductView(generic.TemplateView):
     template_name = 'wms/db_log/db_product.html'
@@ -695,7 +695,7 @@ class StorageView(generic.TemplateView):
         return context
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @method_decorator(login_required, name='dispatch')
 class ProductHistoryView(generic.TemplateView):
     template_name = 'wms/db_log/log_product.html'
@@ -864,7 +864,7 @@ class AgvTransferHistoryView(generic.TemplateView):
         return context
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # FormView for edit data
 # @method_decorator(login_required, name='dispatch')
 class AgvProductionPlanView(generic.TemplateView):
@@ -886,7 +886,7 @@ class AgvTransferView(generic.TemplateView):
     template_name = 'wms/agv/agvtransfer_form.html'
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # Function for CRUD data
 # @login_required
 def agvproductionplan_update(request, pk):
@@ -927,7 +927,7 @@ def agvproductionplan_clear(request):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @login_required
 def agvqueue_update(request, pk):
     obj = get_object_or_404(AgvQueue, pk=pk)
@@ -983,7 +983,7 @@ def agvqueue_clear(request):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @login_required
 def robotqueue_update(request, pk):
     obj = get_object_or_404(RobotQueue, pk=pk)
@@ -1023,7 +1023,7 @@ def robotqueue_clear(request):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # @login_required
 def agvtransfer_update(request, pk):
     obj = get_object_or_404(AgvTransfer, pk=pk)
@@ -1046,7 +1046,7 @@ def agvtransfer_update(request, pk):
     return JsonResponse(data)
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # Agv to home
 # @login_required
 def agv_to_home(request, pk):
@@ -1057,7 +1057,7 @@ def agv_to_home(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 # API for data
 class AgvRobotStatusViewSet(viewsets.ViewSetMixin, ObjectMultipleModelAPIView):
     querylist = [
@@ -1109,7 +1109,7 @@ class StorageViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 class ProductHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.history.all()
     serializer_class = ProductHistorySerializer
@@ -1196,7 +1196,7 @@ class AgvTransferHistoryViewSet(viewsets.ReadOnlyModelViewSet):
         return queryset
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 class OverviewGraphViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.objects.all()
 
@@ -1242,7 +1242,7 @@ class OverviewGraphViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(data)
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 class UsageGraphViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Storage.objects.all()
 
@@ -1258,7 +1258,7 @@ class UsageGraphViewSet(viewsets.ReadOnlyModelViewSet):
         return Response(data)
 
 
-###################################################################################################################################################
+######################################################################################################################################################
 class HistoryGraphViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Product.history.all()
 
@@ -1306,3 +1306,7 @@ class HistoryGraphViewSet(viewsets.ReadOnlyModelViewSet):
 
         data = {'label_list': label_list, 'dt': dt, 'qty': qty}
         return Response(data)
+
+
+######################################################################################################################################################
+

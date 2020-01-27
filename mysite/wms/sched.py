@@ -67,7 +67,6 @@ def robot_check():
         if qs_robot:
             qs_plan = AgvProductionPlan.objects.all()
             if qs_plan:
-
                 class Found(Exception):
                     pass
 

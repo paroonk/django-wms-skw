@@ -150,7 +150,7 @@
                         var api_agvtransfer = '{% url 'wms:agvtransfer-list' %}'
                         url_agvtransfer_form = []
                         {% for item in agvtransfer %}
-                            url_agvtransfer_form[{{ item.id }}] = "{% url 'wms:agvtransfer_form' item.id %}"
+                            url_agvtransfer_form[{{ item.id|escape }}] = "{% url 'wms:agvtransfer_form' item.id %}"
                         {% endfor %}
                         console.log(url_agvtransfer_form)
                         function render_agvtransfer(response) {
