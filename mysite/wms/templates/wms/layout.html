@@ -77,18 +77,20 @@
                                     </td>
                                     {% endif %}
                                 {% else %}
-                                    {% if col == 46 and row >= 5 and row <= 7 or col == 39 and row >= 5 and row <= 7 %}
-                                        {% if col == 46 and row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
-                                        {% elif col == 39 and row == 5 %}
+                                    {% if col == 39 and row == 4 %}
+                                        <td id="robotQty2" class="storage noBorder"></td>
+                                    {% elif col == 46 and row == 4 %}
+                                        <td id="robotQty1" class="storage noBorder"></td>
+                                    {% elif col == 39 and row >= 5 and row <= 6 %}
+                                        {% if row == 5 %}
                                         <td rowspan="2" class="storage robot">Ro bot #2</td>
-                                        {% elif col == 46 and row == 7 %}
-                                        <td id="robotQty1" rowspan="1" class="storage noBorder"></td>
-                                        {% elif col == 39 and row == 7 %}
-                                        <td id="robotQty2" rowspan="1" class="storage noBorder"></td>
+                                        {% endif %}
+                                    {% elif col == 46 and row >= 5 and row <= 6 %}
+                                        {% if row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
                                         {% endif %}
                                     {% else %}
-                                    <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
+                                        <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -152,7 +154,6 @@
                         {% for item in agvtransfer %}
                             url_agvtransfer_form[{{ item.id|escape }}] = "{% url 'wms:agvtransfer_form' item.id %}"
                         {% endfor %}
-                        console.log(url_agvtransfer_form)
                         function render_agvtransfer(response) {
                             $("#agvtransfer-table tbody").empty()
                             $.each(response, function (key, value) {

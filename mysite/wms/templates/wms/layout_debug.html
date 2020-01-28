@@ -63,14 +63,16 @@
                                     </td>
                                     {% endif %}
                                 {% else %}
-                                    {% if col == 46 and row >= 5 and row <= 7 or col == 39 and row >= 5 and row <= 7 %}
-                                        {% if col == 46 and row == 5 %}
-                                        <td class="storage robot" rowspan="2">Ro bot #1</td>
-                                        {% elif col == 39 and row == 5 %}
-                                        <td class="storage robot" rowspan="2">Ro bot #2</td>
+                                    {% if col == 39 and row >= 5 and row <= 6 %}
+                                        {% if row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #2</td>
+                                        {% endif %}
+                                    {% elif col == 46 and row >= 5 and row <= 6 %}
+                                        {% if row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
                                         {% endif %}
                                     {% else %}
-                                    <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
+                                        <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}

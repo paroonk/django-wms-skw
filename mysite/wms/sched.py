@@ -173,6 +173,7 @@ def transfer_adjust(obj_transfer):
     agv_beta = obj_transfer.beta_nav - beta_offset
     if agv_beta < 0:
         agv_beta = agv_beta + 360.0
+    # Offset NAV from center of rotation
     nav_offset = 0.5
     agv_x = obj_transfer.x_nav - (nav_offset * np.cos(agv_beta * np.pi / 180.0))
     agv_y = obj_transfer.y_nav - (nav_offset * np.sin(agv_beta * np.pi / 180.0))
@@ -231,22 +232,14 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                 if dist_error > dist_check:
                     route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
+                    agv_next_step(agv_no, obj_transfer, agv_x, agv_y, dist_error)
             elif active_queue['mode'] == 2:
                 target_col = active_queue['pick_col']
                 target_row = runway_row
                 if dist_error > dist_check:
                     route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
+                    agv_next_step(agv_no, obj_transfer, agv_x, agv_y, dist_error)
         elif obj_transfer.step == 2:
             if active_queue['mode'] == 1:
                 target_col = 45 if active_queue['robot_no'] == 1 else 40
@@ -259,11 +252,7 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 2, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
+                    agv_next_step(agv_no, obj_transfer, agv_x, agv_y, dist_error)
             elif active_queue['mode'] == 2:
                 target_col = active_queue['pick_col']
                 target_row = active_queue['pick_row']
@@ -275,11 +264,7 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 3, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
+                    agv_next_step(agv_no, obj_transfer, agv_x, agv_y, dist_error)
         elif obj_transfer.step == 3:
             if active_queue['mode'] == 1:
                 target_col = 45 if active_queue['robot_no'] == 1 else 40
@@ -290,11 +275,7 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 1, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
+                    agv_next_step(agv_no, obj_transfer, agv_x, agv_y, dist_error)
             elif active_queue['mode'] == 2:
                 target_col = active_queue['pick_col']
                 target_row = runway_row
@@ -304,22 +285,14 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                     fix_y = obj_coor.coor_y
                     route_calculate(agv_no, obj_transfer, 1, fix_x, fix_y, target_col, target_row)
                 else:
-                    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                    x_check[agv_no] = y_check[agv_no] = 999.9
-                    obj_transfer.step = obj_transfer.step + 1
-                    obj_transfer.changeReason = 'Next Step'
-                    obj_transfer.save()
+                    agv_next_step(agv_no, obj_transfer, agv_x, agv_y, dist_error)
         elif obj_transfer.step == 4:
             target_col = active_queue['place_col']
             target_row = runway_row
             if dist_error > dist_check:
                 route_calculate(agv_no, obj_transfer, 0, agv_x, agv_y, target_col, target_row)
             else:
-                print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                x_check[agv_no] = y_check[agv_no] = 999.9
-                obj_transfer.step = obj_transfer.step + 1
-                obj_transfer.changeReason = 'Next Step'
-                obj_transfer.save()
+                agv_next_step(agv_no, obj_transfer, agv_x, agv_y, dist_error)
         elif obj_transfer.step == 5:
             target_col = active_queue['place_col']
             target_row = active_queue['place_row']
@@ -331,11 +304,7 @@ def agv_route(agv_no, qs_transfer, qs_queue):
                 fix_y = obj_coor.coor_y
                 route_calculate(agv_no, obj_transfer, 4, fix_x, fix_y, target_col, target_row)
             else:
-                print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
-                x_check[agv_no] = y_check[agv_no] = 999.9
-                obj_transfer.step = obj_transfer.step + 1
-                obj_transfer.changeReason = 'Next Step'
-                obj_transfer.save()
+                agv_next_step(agv_no, obj_transfer, agv_x, agv_y, dist_error)
         elif obj_transfer.step == 6:
             target_col = active_queue['place_col']
             if active_queue['place_row'] > runway_row:
@@ -450,6 +419,13 @@ def agv_route(agv_no, qs_transfer, qs_queue):
             obj_transfer.save()
 
     scheduler.resume_job(job_id='transfer_check')
+
+def agv_next_step(agv_no, obj_transfer, agv_x, agv_y, dist_error):
+    print(datetime_now() + 'Finish, NAV {:.2f},{:.2f} Check {:.2f},{:.2f} Error {:.4f}'.format(agv_x, agv_y, x_check[agv_no], y_check[agv_no], dist_error))
+    x_check[agv_no] = y_check[agv_no] = 999.9
+    obj_transfer.step = obj_transfer.step + 1
+    obj_transfer.changeReason = 'Next Step'
+    obj_transfer.save()
 
 
 def agv_route_home(agv_no, qs_transfer):
