@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_pandas.io import read_frame
+from shapely.geometry import LineString
 from simple_history.signals import post_create_historical_record
 
 from .models import *
@@ -25,9 +26,9 @@ for i in agv_list:
 db_update_list = []
 db_update_initial = True
 
-# Home Location #
-home_col = 48
-home_row = 9
+# Home Location
+home_col = {1: 48}
+home_row = {1: 9}
 
 
 def datetime_now():
@@ -36,7 +37,7 @@ def datetime_now():
 
 def initial_data():
     try:
-        # Create buffer sql variable for communication #
+        # Create buffer sql variable for communication
         for agv_no in agv_list:
             if not AgvTransfer.objects.filter(id=agv_no).exists():
                 qs_transfer = AgvTransfer(id=agv_no)
@@ -47,7 +48,7 @@ def initial_data():
                 qs_robot = RobotStatus(robot_no=robot_no)
                 qs_robot.save()
 
-        # Clear old log #
+        # Clear old log
         days_history_keep = 30
         date_keep = timezone.now() - timezone.timedelta(days=days_history_keep)
         # Product.history.filter(history_date__lt=date_keep).delete()
@@ -67,6 +68,7 @@ def robot_check():
         if qs_robot:
             qs_plan = AgvProductionPlan.objects.all()
             if qs_plan:
+
                 class Found(Exception):
                     pass
 
@@ -80,7 +82,7 @@ def robot_check():
                     obj_plan = i
                     obj_robot = j
 
-                    # Only store to pre-assigned storage and don't have any inventory before it #
+                    # Only store to pre-assigned storage and don't have any inventory before it
                     qs_avail_storage = Storage.objects.filter(storage_for=obj_plan.product_name.product_name)
                     qs_occupied = qs_avail_storage.filter(Q(have_inventory=True) | Q(storage_id__in=AgvQueue.objects.all().values('place_id')))
                     for column_id in qs_occupied.order_by().distinct().values_list('column_id', flat=True):
@@ -147,18 +149,26 @@ def robot_check():
 def transfer_check():
     global x_check, y_check
     try:
+        qs_transfer_list = []
         for agv_no in agv_list:
             if AgvTransfer.objects.filter(id=agv_no).exists():
-                qs_transfer1 = AgvTransfer.objects.filter(id=agv_no)
-                qs_transfer_list = [qs_transfer1]
+                qs_transfer = AgvTransfer.objects.filter(id=agv_no)
+                qs_transfer_list.append(qs_transfer)
 
         for agv_no, qs_transfer in enumerate(qs_transfer_list, 1):
             try:
                 obj_transfer = get_object_or_404(qs_transfer)
-                if obj_transfer.run == 1 and obj_transfer.status == 0:
-                    if agv_no == 1:
-                        qs_queue = AgvQueue.objects.all()
-                        scheduler.add_job(agv_route, 'date', run_date=timezone.now(), args=[agv_no, qs_transfer, qs_queue], id='agv_route', replace_existing=True)
+                if obj_transfer.run == 1 and obj_transfer.status == 0 and transfer_hold[agv_no] == 0:
+                    qs_queue = AgvQueue.objects.filter(Q(agv_no=agv_no) | Q(agv_no__isnull=True))
+                    if len(qs_queue) >= 1:
+                        if len(qs_queue.filter(agv_no=agv_no)) >= 1:
+                            qs_queue = qs_queue.filter(agv_no=agv_no)[:1]
+                        else:
+                            qs_queue = qs_queue.filter(agv_no__isnull=True)[:1]
+                            obj_queue = qs_queue.first()
+                            obj_queue.agv_no = agv_no
+                            obj_queue.save()
+                        scheduler.add_job(agv_route, 'date', run_date=timezone.now(), args=[agv_no, qs_transfer, qs_queue], id='agv_route_{}'.format(agv_no), replace_existing=True)
                 elif obj_transfer.run == 0:
                     x_check[agv_no] = y_check[agv_no] = 999.9
             except AgvTransfer.DoesNotExist:
@@ -187,7 +197,7 @@ def transfer_update(agv_no):
     obj_transfer.status = 1
     obj_transfer.changeReason = 'Delayed AGV Command'
     obj_transfer.save()
-    scheduler.add_job(transfer_reset_hold, 'date', run_date=timezone.now() + timezone.timedelta(seconds=10), args=[agv_no], id='transfer_reset_hold', replace_existing=True)
+    scheduler.add_job(transfer_reset_hold, 'date', run_date=timezone.now() + timezone.timedelta(seconds=10), args=[agv_no], id='transfer_reset_hold_{}'.format(agv_no), replace_existing=True)
     print(datetime_now() + 'Send New Command to AGV')
 
 
@@ -224,6 +234,9 @@ def agv_route(agv_no, qs_transfer, qs_queue):
         # Check Distance
         dist_check = 2.0
         dist_error = np.sqrt((agv_x - x_check[agv_no]) ** 2 + (agv_y - y_check[agv_no]) ** 2)
+
+        # Check AGV col, row
+        agv_col, agv_row = position_cal(agv_x, agv_y)
 
         if obj_transfer.step == 1:
             if active_queue['mode'] == 1:
