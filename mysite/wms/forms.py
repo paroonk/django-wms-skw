@@ -262,8 +262,11 @@ class AgvTransferForm(forms.ModelForm):
 class ManualTransferForm(forms.Form):
     agv_no = forms.ModelChoiceField(label=_('AGV No.'), queryset=AgvTransfer.objects.all(), empty_label=None)
     pattern = forms.ChoiceField(label=_('Pattern'), choices=AgvTransfer.pattern_choices)
-    layout_col = forms.ChoiceField(label=_('Column'), choices=[(col, col) for col in list(set(Coordinate.objects.all().values_list('layout_col', flat=True)))[1:-1]])
-    layout_row = forms.ChoiceField(label=_('Row'), choices=[(row, row) for row in list(set(Coordinate.objects.all().values_list('layout_row', flat=True)))[1:-1]])
+    try:
+        layout_col = forms.ChoiceField(label=_('Column'), choices=[(col, col) for col in list(set(Coordinate.objects.all().values_list('layout_col', flat=True)))[1:-1]])
+        layout_row = forms.ChoiceField(label=_('Row'), choices=[(row, row) for row in list(set(Coordinate.objects.all().values_list('layout_row', flat=True)))[1:-1]])
+    except ProgrammingError:
+        pass
 
     def clean(self):
         cleaned_data = super().clean()
