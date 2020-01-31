@@ -171,6 +171,11 @@ def transfer_check():
                         scheduler.add_job(agv_route, 'date', run_date=timezone.now(), args=[agv_no, qs_transfer, qs_queue], id='agv_route_{}'.format(agv_no), replace_existing=True)
                 elif obj_transfer.run == 0:
                     x_check[agv_no] = y_check[agv_no] = 999.9
+                    job_id_list = ['agv_route_{}'.format(agv_no), 'transfer_update_{}'.format(agv_no), 'transfer_reset_hold_{}'.format(agv_no)]
+                    for job_id in job_id_list:
+                        if scheduler.get_job(job_id=job_id) is not None:
+                            scheduler.remove_job(job_id=job_id)
+
             except AgvTransfer.DoesNotExist:
                 pass
 
