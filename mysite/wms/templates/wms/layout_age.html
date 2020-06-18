@@ -19,7 +19,7 @@
     <div class="card shadow">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="layout" id="layout-table">
+                <table id="layout-table" class="layout">
                     <thead>
                         <tr>
                             <th class="headerFooter font-weight-bold"></th>
@@ -45,7 +45,7 @@
                             {% for col in layout_col reversed %}
                                 {% if layout|k:col|k:row|k:'storage_for' %}
                                     {% if layout|k:col|k:row|k:'have_inventory' %}
-                                    <td class="js-inv-update-button storage"
+                                    <td class="js-inv-update-button storage age-{% if layout|k:col|k:row|k:'age' < age_criteria %}n{% endif %}ok"
                                         data-url="{% url 'wms:inv_update' layout|k:col|k:row|k:'storage_id' %}"
                                         bgcolor="{{ layout|k:col|k:row|k:'bg_color' }}"
                                         data-toggle="tooltip"
@@ -77,16 +77,14 @@
                                     </td>
                                     {% endif %}
                                 {% else %}
-                                    {% if col == 39 and row >= 5 and row <= 6 %}
-                                        {% if row == 5 %}
+                                    {% if col == 46 and row >= 5 and row <= 7 or col == 39 and row >= 5 and row <= 7 %}
+                                        {% if col == 46 and row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
+                                        {% elif col == 39 and row == 5 %}
                                         <td rowspan="2" class="storage robot">Ro bot #2</td>
                                         {% endif %}
-                                    {% elif col == 46 and row >= 5 and row <= 6 %}
-                                        {% if row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #1</td>
-                                        {% endif %}
                                     {% else %}
-                                        <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
+                                    <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -117,7 +115,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="modal-id" role="dialog" tabindex="-1">
+    <div id="modal-id" class="modal fade" role="dialog" tabindex="-1">
         <div class="modal-dialog" role="document">
             <div class="modal-content"></div>
         </div>
@@ -126,6 +124,7 @@
 {% endblock %}
 
 {% block javascript %}
+<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 
 <script type="text/javascript">
     var str_submit = "{% trans 'Submit' %}"
@@ -141,7 +140,5 @@
     }
 </script>
 
-<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/layout_age.js' %}"></script>
-
 {% endblock %}

@@ -19,7 +19,7 @@
     <div class="card shadow">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="layout" id="layout-table">
+                <table id="layout-table" class="layout">
                     <thead>
                         <tr>
                             <th class="headerFooter font-weight-bold"></th>
@@ -77,20 +77,18 @@
                                     </td>
                                     {% endif %}
                                 {% else %}
-                                    {% if col == 39 and row == 4 %}
-                                        <td id="robotQty2" class="storage noBorder"></td>
-                                    {% elif col == 46 and row == 4 %}
-                                        <td id="robotQty1" class="storage noBorder"></td>
-                                    {% elif col == 39 and row >= 5 and row <= 6 %}
-                                        {% if row == 5 %}
-                                        <td rowspan="2" class="storage robot">Ro bot #2</td>
-                                        {% endif %}
-                                    {% elif col == 46 and row >= 5 and row <= 6 %}
-                                        {% if row == 5 %}
+                                    {% if col == 46 and row >= 5 and row <= 7 or col == 39 and row >= 5 and row <= 7 %}
+                                        {% if col == 46 and row == 5 %}
                                         <td rowspan="2" class="storage robot">Ro bot #1</td>
+                                        {% elif col == 39 and row == 5 %}
+                                        <td rowspan="2" class="storage robot">Ro bot #2</td>
+                                        {% elif col == 46 and row == 7 %}
+                                        <td id="robotQty1" rowspan="1" class="storage noBorder"></td>
+                                        {% elif col == 39 and row == 7 %}
+                                        <td id="robotQty2" rowspan="1" class="storage noBorder"></td>
                                         {% endif %}
                                     {% else %}
-                                        <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
+                                    <td class="storage noBorder {% if row == 9 %}runway{% endif %}"></td>
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
@@ -124,7 +122,7 @@
     <br>
     <div class="row justify-content-center">
         <div class="col">
-            <div class="table-responsive" id="agvtransfer-table">
+            <div id="agvtransfer-table" class="table-responsive">
                 <table class="table table-sm table-hover">
                     <thead>
                         <tr>
@@ -134,47 +132,44 @@
                             <th>{% trans 'X NAV' %}</th>
                             <th>{% trans 'Y NAV' %}</th>
                             <th>{% trans 'Beta NAV' %}</th>
+                            <th>{% trans 'AGV Col' %}</th>
+                            <th>{% trans 'AGV Row' %}</th>
                             <th>{% trans 'Pattern' %}</th>
-                            <th>X1</th>
-                            <th>Y1</th>
-                            <th>X2</th>
-                            <th>Y2</th>
-                            <th>X3</th>
-                            <th>Y3</th>
-                            <th>X4</th>
-                            <th>Y4</th>
-                            <th>X5</th>
-                            <th>Y5</th>
+                            <th>Col1</th>
+                            <th>Row1</th>
+                            <th>Col2</th>
+                            <th>Row2</th>
+                            <th>Col3</th>
+                            <th>Row3</th>
+                            <th>Col4</th>
+                            <th>Row4</th>
                         </tr>
                     </thead>
                     <tbody>
                         <script type="text/javascript">
                         var api_agvtransfer = '{% url 'wms:agvtransfer-list' %}'
-                        url_agvtransfer_form = []
-                        {% for item in agvtransfer %}
-                            url_agvtransfer_form[{{ item.id|escape }}] = "{% url 'wms:agvtransfer_form' item.id %}"
-                        {% endfor %}
                         function render_agvtransfer(response) {
                             $("#agvtransfer-table tbody").empty()
                             $.each(response, function (key, value) {
+                                if (value.run == '{% trans 'Start' %}') { run_class = 'text-success' } else { run_class = 'text-danger' }
                                 var data = "<tr>" +
-                                    "<td>" + value.run + "</td>" +
-                                    "<td><a href='#' onclick=PopupCenter('" + url_agvtransfer_form[value.id] + "','Popup','400','600')>" + value.status + "</a></td>" +
+                                    "<td><a class=" + run_class + ">" + value.run + "<a></td>" +
+                                    "<td><a href='#' onclick=PopupCenter('" + "{% url 'wms:agvtransfer_form' -1 %}".replace("-1", value.id) + "','Popup','400','600')>" + value.status + "</a></td>" +
                                     "<td>" + value.step + "</td>" +
                                     "<td>" + value.x_nav + "</td>" +
                                     "<td>" + value.y_nav + "</td>" +
                                     "<td>" + value.beta_nav + "</td>" +
+                                    "<td>" + value.agv_col + "</td>" +
+                                    "<td>" + value.agv_row + "</td>" +
                                     "<td>" + value.pattern + "</td>" +
-                                    "<td>" + value.x1 + "</td>" +
-                                    "<td>" + value.y1 + "</td>" +
-                                    "<td>" + value.x2 + "</td>" +
-                                    "<td>" + value.y2 + "</td>" +
-                                    "<td>" + value.x3 + "</td>" +
-                                    "<td>" + value.y3 + "</td>" +
-                                    "<td>" + value.x4 + "</td>" +
-                                    "<td>" + value.y4 + "</td>" +
-                                    "<td>" + value.x5 + "</td>" +
-                                    "<td>" + value.y5 + "</td>" +
+                                    "<td>" + value.col1 + "</td>" +
+                                    "<td>" + value.row1 + "</td>" +
+                                    "<td>" + value.col2 + "</td>" +
+                                    "<td>" + value.row2 + "</td>" +
+                                    "<td>" + value.col3 + "</td>" +
+                                    "<td>" + value.row3 + "</td>" +
+                                    "<td>" + value.col4 + "</td>" +
+                                    "<td>" + value.row4 + "</td>" +
                                     "</tr>"
                                 $("#agvtransfer-table tbody").append(data)
                             })
@@ -185,7 +180,7 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="modal-id" role="dialog" tabindex="-1">
+    <div id="modal-id" class="modal fade" role="dialog" tabindex="-1">
         <div class="modal-dialog" role="document">
             <div class="modal-content"></div>
         </div>
@@ -194,6 +189,7 @@
 {% endblock %}
 
 {% block javascript %}
+<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 
 <script type="text/javascript">
     var str_submit = "{% trans 'Submit' %}"
@@ -214,8 +210,6 @@
     var agv_top = '{% static 'wms/images/agv_top.gif' %}'
 </script>
 
-<script type="text/javascript" src="{% static 'daterangepicker/js/daterangepicker.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/layout.js' %}"></script>
 <script type="text/javascript" src="{% static 'wms/js/PopupCenter.js' %}"></script>
-
 {% endblock %}

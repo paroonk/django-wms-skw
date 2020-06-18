@@ -7,11 +7,9 @@ class AgvStatusSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         obj_transfer = get_object_or_404(AgvTransfer, id=data['id'])
-        agv_x, agv_y, agv_beta = transfer_adjust(obj_transfer)
-        agv_col, agv_row = position_cal(agv_x, agv_y)
-        data['agv_col'] = int(agv_col)
-        data['agv_row'] = int(agv_row)
-        data['agv_beta'] = int(agv_beta)
+        data['agv_col'] = int(obj_transfer.agv_col)
+        data['agv_row'] = int(obj_transfer.agv_row)
+        data['agv_direction'] = obj_transfer.agv_direction
         return data
 
     class Meta:
@@ -34,26 +32,17 @@ class AgvRobotStatusSerializer(serializers.Serializer):
 
 class AgvTransferSerializer(serializers.ModelSerializer):
     run = serializers.CharField(source='get_run_display')
+    pause = serializers.CharField(source='get_pause_display')
     status = serializers.CharField(source='get_status_display')
     step = serializers.IntegerField(source='get_step_display')
     x_nav = serializers.DecimalField(max_digits=10, decimal_places=4)
     y_nav = serializers.DecimalField(max_digits=10, decimal_places=4)
     beta_nav = serializers.DecimalField(max_digits=10, decimal_places=1)
     pattern = serializers.CharField(source='get_pattern_display')
-    x1 = serializers.DecimalField(max_digits=10, decimal_places=2)
-    y1 = serializers.DecimalField(max_digits=10, decimal_places=2)
-    x2 = serializers.DecimalField(max_digits=10, decimal_places=2)
-    y2 = serializers.DecimalField(max_digits=10, decimal_places=2)
-    x3 = serializers.DecimalField(max_digits=10, decimal_places=2)
-    y3 = serializers.DecimalField(max_digits=10, decimal_places=2)
-    x4 = serializers.DecimalField(max_digits=10, decimal_places=2)
-    y4 = serializers.DecimalField(max_digits=10, decimal_places=2)
-    x5 = serializers.DecimalField(max_digits=10, decimal_places=2)
-    y5 = serializers.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
         model = AgvTransfer
-        fields = ['id', 'run', 'status', 'step', 'x_nav', 'y_nav', 'beta_nav', 'pattern', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5']
+        fields = ['id', 'run', 'pause', 'status', 'step', 'x_nav', 'y_nav', 'beta_nav', 'agv_col', 'agv_row', 'pattern', 'col1', 'row1', 'col2', 'row2', 'col3', 'row3', 'col4', 'row4']
 
 
 class AgvProductionPlanSerializer(serializers.ModelSerializer):
@@ -71,8 +60,11 @@ class AgvProductionPlanSerializer(serializers.ModelSerializer):
 
 class RobotQueueSerializer(serializers.ModelSerializer):
     robot_no = serializers.CharField(source='get_robot_no_display')
-    product_id = serializers.CharField(source='get_product_id_display')
+    product_id = serializers.SerializerMethodField('get_product_id')
     updated = serializers.CharField(source='get_updated_display')
+
+    def get_product_id(self, obj):
+        return obj.product_id.product_name.product_name
 
     class Meta:
         model = RobotQueue
@@ -96,6 +88,13 @@ class AgvQueueSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        for field in ['plant']:
+            if not data[field]:
+                data[field] = ''
+        return data
+
     class Meta:
         model = Product
         fields = ['product_name', 'name_eng', 'plant', 'qty_limit', 'qty_storage', 'qty_inventory', 'qty_buffer', 'qty_misplace', 'qty_total', 'qty_storage_avail', 'qty_inventory_avail']
@@ -127,7 +126,10 @@ class AgvProductionPlanHistorySerializer(serializers.ModelSerializer):
 
 class RobotQueueHistorySerializer(serializers.ModelSerializer):
     robot_no = serializers.CharField(source='get_robot_no_display')
-    product_id = serializers.CharField(source='get_product_id_display')
+    product_id = serializers.SerializerMethodField('get_product_id')
+
+    def get_product_id(self, obj):
+        return obj.product_id.product_name.product_name
 
     class Meta:
         model = RobotQueue.history.model
@@ -153,3 +155,8 @@ class AgvTransferHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = AgvTransfer.history.model
         fields = ['history_date', 'history_type', 'history_change_reason', 'id', 'run', 'status', 'step', 'pause', 'pattern']
+
+
+class ReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report

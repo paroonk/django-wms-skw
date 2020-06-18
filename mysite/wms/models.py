@@ -1,4 +1,7 @@
+import calendar
+
 from computedfields.models import ComputedFieldsModel, computed
+from dirtyfields import DirtyFieldsMixin
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from simple_history.models import HistoricalRecords
@@ -59,7 +62,7 @@ class Column(ComputedFieldsModel):
     for_product = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True)
     for_buffer = models.ForeignKey(Buffer, on_delete=models.SET_NULL, blank=True, null=True)
 
-    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name=_('Storage For')))
+    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name=_('Storage For')), depends=[])
     def storage_for(self):
         try:
             return self.for_product.product_name if self.is_inventory else self.for_buffer.buffer_id
@@ -82,10 +85,10 @@ class Column(ComputedFieldsModel):
 
 class Coordinate(ComputedFieldsModel):
     coor_id = models.AutoField(primary_key=True, unique=True)
-    layout_col = models.PositiveSmallIntegerField(default=1)
-    layout_row = models.PositiveSmallIntegerField(default=1)
-    coor_x = models.FloatField()
-    coor_y = models.FloatField()
+    layout_col = models.FloatField(default=0.0)
+    layout_row = models.FloatField(default=0.0)
+    coor_x = models.FloatField(default=0.0)
+    coor_y = models.FloatField(default=0.0)
 
     def __str__(self):
         return 'Col={} Row={}'.format(self.layout_col, self.layout_row)
@@ -96,8 +99,8 @@ class Coordinate(ComputedFieldsModel):
 
 class Storage(ComputedFieldsModel):
     storage_id = models.CharField(max_length=10, primary_key=True, unique=True, verbose_name=_('Storage ID'))
-    layout_col = models.PositiveSmallIntegerField(default=1, verbose_name=_('Layout Col'))
-    layout_row = models.PositiveSmallIntegerField(default=1, verbose_name=_('Layout Row'))
+    layout_col = models.FloatField(default=0.0, verbose_name=_('Layout Col'))
+    layout_row = models.FloatField(default=0.0, verbose_name=_('Layout Row'))
     column_id = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, verbose_name=_('Column ID'))
     coor_id = models.ForeignKey(Coordinate, on_delete=models.SET_NULL, blank=True, null=True, verbose_name=_('Coordinate ID'))
     inv_product = models.ForeignKey(Product, on_delete=models.SET_NULL, blank=True, null=True, verbose_name=_('Inventory Product'))
@@ -105,75 +108,75 @@ class Storage(ComputedFieldsModel):
     lot_name = models.CharField(max_length=100, blank=True, null=True, verbose_name=_('Lot Name'))
     created_on = models.DateTimeField(blank=True, null=True, verbose_name=_('Created On'))
     updated_on = models.DateTimeField(blank=True, null=True, verbose_name=_('Updated On'))
-    history = HistoricalRecords(excluded_fields=['layout_col', 'layout_row', 'column_id', 'coor_id', 'lot_name', 'updated_on', 'zone', 'area', 'col', 'row', 'coor_x', 'coor_y', 'name_eng', 'bg_color', 'font_color'])
+    history = HistoricalRecords(excluded_fields=['layout_col', 'layout_row', 'column_id', 'coor_id', 'lot_name', 'updated_on', 'zone', 'col', 'row', 'coor_x', 'coor_y', 'bg_color', 'font_color'])
 
-    @computed(models.CharField(max_length=1, verbose_name=_('Zone')))
+    @computed(models.CharField(max_length=1, verbose_name=_('Zone')), depends=[])
     def zone(self):
         return str(self.storage_id)[0:1]
 
-    @computed(models.CharField(max_length=3, verbose_name=_('Area')))
+    @computed(models.CharField(max_length=3, verbose_name=_('Area')), depends=[])
     def area(self):
         return str(self.storage_id)[0:3]
 
-    @computed(models.CharField(max_length=3, verbose_name=_('Column No.')))
+    @computed(models.CharField(max_length=3, verbose_name=_('Column No.')), depends=[])
     def col(self):
         return str(self.storage_id)[3:6]
 
-    @computed(models.CharField(max_length=3, verbose_name=_('Row No.')))
+    @computed(models.CharField(max_length=3, verbose_name=_('Row No.')), depends=[])
     def row(self):
         return str(self.storage_id)[6:9]
 
-    @computed(models.FloatField(verbose_name=_('Coordinate X')), depends=['coor_id#layout_col', 'coor_id#layout_row', 'coor_id#coor_x', 'coor_id#coor_y'])
+    @computed(models.FloatField(verbose_name=_('Coordinate X')), depends=[['self', ['coor_id']], ['coor_id', ['layout_col', 'layout_row', 'coor_x', 'coor_y']]])
     def coor_x(self):
         try:
             return self.coor_id.coor_x
         except:
             return 0.0
 
-    @computed(models.FloatField(verbose_name=_('Coordinate Y')), depends=['coor_id#layout_col', 'coor_id#layout_row', 'coor_id#coor_x', 'coor_id#coor_y'])
+    @computed(models.FloatField(verbose_name=_('Coordinate Y')), depends=[['self', ['coor_id']], ['coor_id', ['layout_col', 'layout_row', 'coor_x', 'coor_y']]])
     def coor_y(self):
         try:
             return self.coor_id.coor_y
         except:
             return 0.0
 
-    @computed(models.BooleanField(verbose_name=_('Is Inventory')), depends=['column_id#is_inventory'])
+    @computed(models.BooleanField(verbose_name=_('Is Inventory')), depends=[['self', ['column_id']], ['column_id', ['is_inventory']]])
     def is_inventory(self):
         return self.column_id.is_inventory
 
-    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name='Storage For'), depends=['column_id#storage_for'])
+    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name='Storage For'), depends=[['self', ['column_id']], ['column_id', ['storage_for']]])
     def storage_for(self):
         return self.column_id.storage_for
 
-    @computed(models.BooleanField(verbose_name=_('Have Inventory')))
+    @computed(models.BooleanField(verbose_name=_('Have Inventory')), depends=[])
     def have_inventory(self):
         return True if self.inv_product else False
 
-    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name=_('English Name')), depends=['inv_product#name_eng'])
+    @computed(models.CharField(max_length=100, blank=True, null=True, verbose_name=_('English Name')), depends=[['self', ['inv_product']], ['inv_product', ['name_eng']]])
     def name_eng(self):
         try:
             return self.inv_product.name_eng
         except:
             return ''
 
-    @computed(models.CharField(max_length=10, verbose_name=_('Bg Color')), depends=['inv_product#bg_color'])
+    @computed(models.CharField(max_length=10, verbose_name=_('Bg Color')), depends=[['self', ['inv_product']], ['inv_product', ['bg_color']]])
     def bg_color(self):
         try:
             return self.inv_product.bg_color
         except:
             return 'white'
 
-    @computed(models.CharField(max_length=10, verbose_name=_('Font Color')), depends=['inv_product#font_color'])
+    @computed(models.CharField(max_length=10, verbose_name=_('Font Color')), depends=[['self', ['inv_product']], ['inv_product', ['font_color']]])
     def font_color(self):
         try:
             return self.inv_product.font_color
         except:
             return 'black'
 
-    @computed(models.BooleanField(blank=True, null=True, verbose_name=_('Misplace')), depends=['column_id#storage_for'])
+    @computed(models.BooleanField(blank=True, null=True, verbose_name=_('Misplace')), depends=[['self', ['column_id']], ['column_id', ['storage_for']]])
     def misplace(self):
         try:
-            return True if self.is_inventory and self.inv_product.product_name != self.storage_for else False
+            return True if self.is_inventory and self.inv_product.product_name != self.column_id.storage_for else False
         except:
             return False
 
@@ -227,39 +230,21 @@ class RobotStatus(ComputedFieldsModel):
         verbose_name_plural = 'Robot status'
 
 
+class RobotTag(ComputedFieldsModel):
+    product_id = models.PositiveSmallIntegerField(primary_key=True, unique=True, verbose_name=_('Product ID'))
+    product_name = models.OneToOneField(Product, on_delete=models.CASCADE, verbose_name=_('Product Name'))
+
+    def __str__(self):
+        return '{}'.format(self.product_name.product_name)
+
+    class Meta:
+        ordering = ('product_id',)
+
+
 class RobotQueue(ComputedFieldsModel):
     robot_choices = [(1, _('Robot #1')), (2, _('Robot #2'))]
     robot_no = models.PositiveSmallIntegerField(choices=robot_choices, verbose_name=_('Robot No.'))
-    product_id_choices = list(
-        enumerate(
-            [
-                'แรด SKW',
-                'เสือพลัส SKW',
-                'ช้างโครงสร้าง(แดง) SKW',
-                'ช้างงานหล่อ(ส้ม) SKW',
-                'ช้างไฮบริด STL',
-                'เสือซูเปอร์ SKW',
-                'เสือใหญ่ SKW',
-                'ช้างม่วง STL',
-                'ช้างทนน้ำทะเล STL',
-                'ช้างทนน้ำเค็มดินเค็ม STL',
-                'ก่อทั่วไป SMC',
-                'เทปรับพื้น SMC',
-                'ฉาบทั่วไป SMC',
-                'ฉาบอิฐมวลเบา SMC',
-                'ฉาบผิวคอนกรีต SMC',
-                'ก่ออิฐมวลเบา SMC',
-                'ฉาบอิฐมวลเบาสูตรพิเศษ SMC',
-                'ก่ออิฐมวลเบา คิวคอน SMC',
-                'ช้างโครงสร้าง(แดง) SLP',
-                'ช้างงานหล่อ(ส้ม) SLP',
-                'เสือใหญ่ SLP',
-                'เสือพลัส SLP',
-                'เสือซูเปอร์ SLP',
-            ]
-        )
-    )
-    product_id = models.PositiveSmallIntegerField(choices=product_id_choices, blank=True, null=True, verbose_name=_('Product ID'))
+    product_id = models.ForeignKey(RobotTag, on_delete=models.CASCADE, blank=True, null=True, verbose_name=_('Product ID'))
     qty_act = models.PositiveIntegerField(verbose_name=_('Actual Quantity (Bag)'))
     updated_choices = [(0, _('Wait')), (1, _('Ready'))]
     updated = models.PositiveSmallIntegerField(choices=updated_choices, verbose_name=_('Updated'))
@@ -286,28 +271,28 @@ class AgvQueue(ComputedFieldsModel):
     agv_no = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name=_('AGV No.'))
     history = HistoricalRecords()
 
-    @computed(models.PositiveSmallIntegerField(blank=True, null=True, verbose_name=_('Pick Col')), depends=['pick_id#layout_col'])
+    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Pick Col')), depends=[['self', ['pick_id']], ['pick_id', ['layout_col']]])
     def pick_col(self):
         try:
             return self.pick_id.layout_col
         except:
             return None
 
-    @computed(models.PositiveSmallIntegerField(blank=True, null=True, verbose_name=_('Pick Row')), depends=['pick_id#layout_row'])
+    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Pick Row')), depends=[['self', ['pick_id']], ['pick_id', ['layout_row']]])
     def pick_row(self):
         try:
             return self.pick_id.layout_row
         except:
             return None
 
-    @computed(models.PositiveSmallIntegerField(blank=True, null=True, verbose_name=_('Place Col')), depends=['place_id#layout_col'])
+    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Place Col')), depends=[['self', ['place_id']], ['place_id', ['layout_col']]])
     def place_col(self):
         try:
             return self.place_id.layout_col
         except:
             return None
 
-    @computed(models.PositiveSmallIntegerField(blank=True, null=True, verbose_name=_('Place Row')), depends=['place_id#layout_row'])
+    @computed(models.FloatField(blank=True, null=True, verbose_name=_('Place Row')), depends=[['self', ['place_id']], ['place_id', ['layout_row']]])
     def place_row(self):
         try:
             return self.place_id.layout_row
@@ -339,6 +324,9 @@ class AgvTransfer(ComputedFieldsModel):
     x_nav = models.FloatField(default=0.0)
     y_nav = models.FloatField(default=0.0)
     beta_nav = models.FloatField(default=0.0)
+    agv_col = models.FloatField(default=0.0, verbose_name=_('AGV Column'))
+    agv_row = models.FloatField(default=0.0, verbose_name=_('AGV Row'))
+    agv_direction = models.CharField(max_length=1, default='L', verbose_name=_('AGV Direction'))
     pause_choices = list(enumerate([_('Not Pause'), _('Pause')]))
     pause = models.PositiveSmallIntegerField(choices=pause_choices, default=0)
     pattern_choices = [(0.0, 'P0: ArmRun -> Rev'), (1.0, 'P1: Rev -> ArmRun'), (2.0, 'P2: ArmPrepare -> FW -> Pick(Robot)'), (3.0, 'P3: ArmPrepare -> FW -> Pick(Storage)'), (4.0, 'P4: FW -> ArmPut')]
@@ -354,20 +342,79 @@ class AgvTransfer(ComputedFieldsModel):
     y4 = models.FloatField(default=0.0)
     x5 = models.FloatField(default=0.0)
     y5 = models.FloatField(default=0.0)
-    col1 = models.PositiveSmallIntegerField(default=0)
-    row1 = models.PositiveSmallIntegerField(default=0)
-    col2 = models.PositiveSmallIntegerField(default=0)
-    row2 = models.PositiveSmallIntegerField(default=0)
-    col3 = models.PositiveSmallIntegerField(default=0)
-    row3 = models.PositiveSmallIntegerField(default=0)
-    col4 = models.PositiveSmallIntegerField(default=0)
-    row4 = models.PositiveSmallIntegerField(default=0)
-    col5 = models.PositiveSmallIntegerField(default=0)
-    row5 = models.PositiveSmallIntegerField(default=0)
-    history = HistoricalRecords(excluded_fields=['x_nav', 'y_nav', 'beta_nav', 'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5', 'col1', 'row1', 'col2', 'row2', 'col3', 'row3', 'col4', 'row4', 'col5', 'row5'])
+    col1 = models.FloatField(default=0.0)
+    row1 = models.FloatField(default=0.0)
+    col2 = models.FloatField(default=0.0)
+    row2 = models.FloatField(default=0.0)
+    col3 = models.FloatField(default=0.0)
+    row3 = models.FloatField(default=0.0)
+    col4 = models.FloatField(default=0.0)
+    row4 = models.FloatField(default=0.0)
+    col5 = models.FloatField(default=0.0)
+    row5 = models.FloatField(default=0.0)
+    history = HistoricalRecords(
+        excluded_fields=[
+            'x_nav',
+            'y_nav',
+            'beta_nav',
+            'agv_col',
+            'agv_row',
+            'agv_direction',
+            'x1',
+            'y1',
+            'x2',
+            'y2',
+            'x3',
+            'y3',
+            'x4',
+            'y4',
+            'x5',
+            'y5',
+            'col1',
+            'row1',
+            'col2',
+            'row2',
+            'col3',
+            'row3',
+            'col4',
+            'row4',
+            'col5',
+            'row5',
+        ]
+    )
+
+    def save_without_historical_record(self, *args, **kwargs):
+        self.skip_history_when_saving = True
+        print('test', *args)
+        try:
+            ret = self.save(*args, **kwargs)
+        finally:
+            del self.skip_history_when_saving
+        return ret
 
     def __str__(self):
         return '{}'.format(self.id)
 
     class Meta:
         ordering = ('id',)
+
+
+class Setting(ComputedFieldsModel):
+    age_criteria = models.PositiveSmallIntegerField(default=7)
+
+
+class Report(ComputedFieldsModel):
+    year = models.PositiveSmallIntegerField()
+    month_choices = [(i, _(str(calendar.month_name[i]))) for i in range(1, 13)]
+    month = models.PositiveSmallIntegerField(choices=month_choices)
+    day_choices = [(i, str(i)) for i in range(1, 32)]
+    day = models.PositiveSmallIntegerField(choices=day_choices)
+    shift_choices = [(i, str(i)) for i in range(1, 4)]
+    shift = models.PositiveSmallIntegerField(choices=shift_choices)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name=_('Product Name'))
+    qty_produce = models.IntegerField(blank=True, null=True, default=0)
+    qty_sale = models.IntegerField(blank=True, null=True, default=0)
+    qty_nonmove = models.IntegerField(blank=True, null=True, default=0)
+
+    def __str__(self):
+        return '{}-{}-{} Shift#{} {}'.format(self.year, self.month, self.day, self.shift, self.product.product_name)
